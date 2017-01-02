@@ -1,0 +1,8 @@
+[package]
+name = "dsp-bench-rust"
+version = "0.1.0"
+authors = ["supercurio"]
+
+[dependencies]
+rand = "*"
+time = "0.1"

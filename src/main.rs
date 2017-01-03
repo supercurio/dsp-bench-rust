@@ -1,7 +1,6 @@
 extern crate rand;
 extern crate time;
 
-
 use std::f64::consts::PI;
 use rand::Rng;
 use time::precise_time_ns;
@@ -95,32 +94,6 @@ fn iir_vec(input: &Vec<f64>, output: &mut Vec<f64>, bq: &mut Biquad) {
     }
 }
 
-fn iir_vec_zip(input: &Vec<f64>, output: &mut Vec<f64>, bq: &mut Biquad) {
-
-    for (x, y) in input.iter().zip(output.iter_mut()) {
-        *y = (bq.b0 * *x) + (bq.b1 * bq.x1) + (bq.b2 * bq.x2) - (bq.a1 * bq.y1) - (bq.a2 * bq.y2);
-
-        bq.x2 = bq.x1;
-        bq.x1 = *x;
-
-        bq.y2 = bq.y1;
-        bq.y1 = *y;
-    }
-}
-
-fn iir_vec_zip_2(input: &Vec<f64>, output: &mut Vec<f64>, bq: &mut Biquad) {
-
-    for (&x, y) in input.iter().zip(output.iter_mut()) {
-        *y = (bq.b0 * x) + (bq.b1 * bq.x1) + (bq.b2 * bq.x2) - (bq.a1 * bq.y1) - (bq.a2 * bq.y2);
-
-        bq.x2 = bq.x1;
-        bq.x1 = x;
-
-        bq.y2 = bq.y1;
-        bq.y1 = *y;
-    }
-}
-
 fn iir_vec_2(input: &Vec<f64>, output: &mut Vec<f64>, bq: &mut Biquad) {
     let len = input.len();
 
@@ -138,6 +111,103 @@ fn iir_vec_2(input: &Vec<f64>, output: &mut Vec<f64>, bq: &mut Biquad) {
         bq.y2 = bq.y1;
         bq.y1 = outval;
     }
+}
+
+fn iir_vec_3(input: &Vec<f64>, output: &mut Vec<f64>, bq: &mut Biquad) {
+    let len = input.len();
+
+    let mut x1 = bq.x1;
+    let mut x2 = bq.x2;
+    let mut y1 = bq.y1;
+    let mut y2 = bq.y2;
+
+    for i in 0..len {
+        let inval = input[i];
+
+        let outval = (bq.b0 * inval) + (bq.b1 * bq.x1) + (bq.b2 * bq.x2) - (bq.a1 * y1) -
+                     (bq.a2 * y2);
+
+        output[i] = outval;
+
+        x2 = x1;
+        x1 = inval;
+
+        y2 = y1;
+        y1 = outval;
+    }
+
+    bq.x1 = x1;
+    bq.x2 = x2;
+    bq.y1 = y1;
+    bq.y2 = y2;
+}
+
+fn iir_vec_zip(input: &Vec<f64>, output: &mut Vec<f64>, bq: &mut Biquad) {
+    for (x, y) in input.iter().zip(output.iter_mut()) {
+        *y = (bq.b0 * *x) + (bq.b1 * bq.x1) + (bq.b2 * bq.x2) - (bq.a1 * bq.y1) - (bq.a2 * bq.y2);
+
+        bq.x2 = bq.x1;
+        bq.x1 = *x;
+
+        bq.y2 = bq.y1;
+        bq.y1 = *y;
+    }
+}
+
+fn iir_vec_zip_2(input: &Vec<f64>, output: &mut Vec<f64>, bq: &mut Biquad) {
+    for (&x, y) in input.iter().zip(output.iter_mut()) {
+        *y = (bq.b0 * x) + (bq.b1 * bq.x1) + (bq.b2 * bq.x2) - (bq.a1 * bq.y1) - (bq.a2 * bq.y2);
+
+        bq.x2 = bq.x1;
+        bq.x1 = x;
+
+        bq.y2 = bq.y1;
+        bq.y1 = *y;
+    }
+}
+
+fn iir_vec_zip_3(input: &Vec<f64>, output: &mut Vec<f64>, bq: &mut Biquad) {
+    let mut x1 = bq.x1;
+    let mut x2 = bq.x2;
+    let mut y1 = bq.y1;
+    let mut y2 = bq.y2;
+
+    for (x, y) in input.iter().zip(output.iter_mut()) {
+        *y = (bq.b0 * *x) + (bq.b1 * x1) + (bq.b2 * x2) - (bq.a1 * y1) - (bq.a2 * y2);
+
+        x2 = x1;
+        x1 = *x;
+
+        y2 = y1;
+        y1 = *y;
+    }
+
+    bq.x1 = x1;
+    bq.x2 = x2;
+    bq.y1 = y1;
+    bq.y2 = y2;
+}
+
+fn iir_vec_zip_4(input: &Vec<f64>, output: &mut Vec<f64>, bq: &mut Biquad) {
+    let mut x1 = bq.x1;
+    let mut x2 = bq.x2;
+    let mut y1 = bq.y1;
+    let mut y2 = bq.y2;
+
+    for (&x, y) in input.iter().zip(output.iter_mut()) {
+        *y = (bq.b0 * x) + (bq.b1 * x1) + (bq.b2 * x2) - (bq.a1 * y1) - (bq.a2 * y2);
+
+        x2 = x1;
+        x1 = x;
+
+        y2 = y1;
+        y1 = *y;
+    }
+
+    bq.x1 = x1;
+    bq.x2 = x2;
+    bq.y1 = y1;
+    bq.y2 = y2;
 }
 
 fn iir_array(input: &[f64; 4096], output: &mut [f64; 4096], bq: &mut Biquad) {
@@ -165,6 +235,53 @@ fn iir_slice(input: &[f64], output: &mut [f64], bq: &mut Biquad) {
         bq.y1 = output[i];
     }
 }
+
+fn iir_slice_zip(input: &[f64], output: &mut [f64], bq: &mut Biquad) {
+    let mut x1 = bq.x1;
+    let mut x2 = bq.x2;
+    let mut y1 = bq.y1;
+    let mut y2 = bq.y2;
+
+    for (&x, y) in input.iter().zip(output.iter_mut()) {
+        *y = (bq.b0 * x) + (bq.b1 * x1) + (bq.b2 * x2) - (bq.a1 * y1) - (bq.a2 * y2);
+
+        x2 = x1;
+        x1 = x;
+
+        y2 = y1;
+        y1 = *y;
+    }
+
+    bq.x1 = x1;
+    bq.x2 = x2;
+    bq.y1 = y1;
+    bq.y2 = y2;
+}
+
+
+
+fn iir_slice_zip_2(input: &[f64], output: &mut [f64], bq: &mut Biquad) {
+    let mut x1 = bq.x1;
+    let mut x2 = bq.x2;
+    let mut y1 = bq.y1;
+    let mut y2 = bq.y2;
+
+    for (x, y) in input.iter().zip(output.iter_mut()) {
+        *y = (bq.b0 * *x) + (bq.b1 * x1) + (bq.b2 * x2) - (bq.a1 * y1) - (bq.a2 * y2);
+
+        x2 = x1;
+        x1 = *x;
+
+        y2 = y1;
+        y1 = *y;
+    }
+
+    bq.x1 = x1;
+    bq.x2 = x2;
+    bq.y1 = y1;
+    bq.y2 = y2;
+}
+
 
 fn iir_slice_unsafe(input: &[f64], output: &mut [f64], bq: &mut Biquad) {
     unsafe {
@@ -212,6 +329,24 @@ fn main() {
     {
         let start = precise_time_ns();
         for _ in 0..bench_loops {
+            iir_vec_2(&input, &mut output, &mut bq);
+        }
+        let elapsed = precise_time_ns() - start;
+        println!("iir_vec_2:\t\t\t{} ns per loop", elapsed / bench_loops);
+    }
+
+    {
+        let start = precise_time_ns();
+        for _ in 0..bench_loops {
+            iir_vec_3(&input, &mut output, &mut bq);
+        }
+        let elapsed = precise_time_ns() - start;
+        println!("iir_vec_3:\t\t\t{} ns per loop", elapsed / bench_loops);
+    }
+
+    {
+        let start = precise_time_ns();
+        for _ in 0..bench_loops {
             iir_vec_zip(&input, &mut output, &mut bq);
         }
         let elapsed = precise_time_ns() - start;
@@ -230,10 +365,48 @@ fn main() {
     {
         let start = precise_time_ns();
         for _ in 0..bench_loops {
-            iir_vec_2(&input, &mut output, &mut bq);
+            iir_vec_zip_3(&input, &mut output, &mut bq);
         }
         let elapsed = precise_time_ns() - start;
-        println!("iir_vec_2:\t\t\t{} ns per loop", elapsed / bench_loops);
+        println!("iir_vec_zip_3:\t\t\t{} ns per loop", elapsed / bench_loops);
+    }
+
+    {
+        let start = precise_time_ns();
+        for _ in 0..bench_loops {
+            iir_vec_zip_4(&input, &mut output, &mut bq);
+        }
+        let elapsed = precise_time_ns() - start;
+        println!("iir_vec_zip_4:\t\t\t{} ns per loop", elapsed / bench_loops);
+    }
+
+    {
+        let start = precise_time_ns();
+        for _ in 0..bench_loops {
+            iir_slice(&input, &mut output, &mut bq);
+        }
+        let elapsed = precise_time_ns() - start;
+        println!("iir_slice (vec):\t\t{} ns per loop", elapsed / bench_loops);
+    }
+
+    {
+        let start = precise_time_ns();
+        for _ in 0..bench_loops {
+            iir_slice_zip(&input, &mut output, &mut bq);
+        }
+        let elapsed = precise_time_ns() - start;
+        println!("iir_slice_zip (vec):\t\t{} ns per loop",
+                 elapsed / bench_loops);
+    }
+
+    {
+        let start = precise_time_ns();
+        for _ in 0..bench_loops {
+            iir_slice_unsafe(&input, &mut output, &mut bq);
+        }
+        let elapsed = precise_time_ns() - start;
+        println!("iir_slice_unsafe (vec):\t\t{} ns per loop",
+                 elapsed / bench_loops);
     }
 
     {
@@ -259,7 +432,7 @@ fn main() {
                       &mut bq);
         }
         let elapsed = precise_time_ns() - start;
-        println!("iir_slice (array):\t\t{} ns per loop",
+        println!("iir_slice (sliced array):\t{} ns per loop",
                  elapsed / bench_loops);
     }
 
@@ -272,7 +445,48 @@ fn main() {
             iir_slice(&input_array, &mut output_array, &mut bq);
         }
         let elapsed = precise_time_ns() - start;
-        println!("iir_slice (4096 array):\t\t{} ns per loop",
+        println!("iir_slice (whole array):\t{} ns per loop",
+                 elapsed / bench_loops);
+    }
+
+    {
+        let input_array = white_noise_array();
+        let mut output_array = [0.0; 4096];
+
+        let start = precise_time_ns();
+        for _ in 0..bench_loops {
+            iir_slice_zip(&input_array, &mut output_array, &mut bq);
+        }
+        let elapsed = precise_time_ns() - start;
+        println!("iir_slice_zip (whole array):\t{} ns per loop",
+                 elapsed / bench_loops);
+    }
+
+    {
+        let input_array = white_noise_array();
+        let mut output_array = [0.0; 4096];
+
+        let start = precise_time_ns();
+        for _ in 0..bench_loops {
+            iir_slice_zip_2(&input_array[0..buffer_length],
+                            &mut output_array[0..buffer_length],
+                            &mut bq);
+        }
+        let elapsed = precise_time_ns() - start;
+        println!("iir_slice_zip_2 (sliced array):\t{} ns per loop",
+                 elapsed / bench_loops);
+    }
+
+    {
+        let input_array = white_noise_array();
+        let mut output_array = [0.0; 4096];
+
+        let start = precise_time_ns();
+        for _ in 0..bench_loops {
+            iir_slice_zip_2(&input_array, &mut output_array, &mut bq);
+        }
+        let elapsed = precise_time_ns() - start;
+        println!("iir_slice_zip_2 (whole array):\t{} ns per loop",
                  elapsed / bench_loops);
     }
 
@@ -285,27 +499,7 @@ fn main() {
             iir_slice_unsafe(&input_array, &mut output_array, &mut bq);
         }
         let elapsed = precise_time_ns() - start;
-        println!("iir_slice_unsafe (4096 array):\t{} ns per loop",
+        println!("iir_slice_unsafe (whole array):\t{} ns per loop",
                  elapsed / bench_loops);
     }
-
-    {
-        let start = precise_time_ns();
-        for _ in 0..bench_loops {
-            iir_slice(&input, &mut output, &mut bq);
-        }
-        let elapsed = precise_time_ns() - start;
-        println!("iir_slice (vec):\t\t{} ns per loop", elapsed / bench_loops);
-    }
-
-    {
-        let start = precise_time_ns();
-        for _ in 0..bench_loops {
-            iir_slice_unsafe(&input, &mut output, &mut bq);
-        }
-        let elapsed = precise_time_ns() - start;
-        println!("iir_slice_unsafe (vec):\t\t{} ns per loop",
-                 elapsed / bench_loops);
-    }
-
 }

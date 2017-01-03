@@ -210,6 +210,31 @@ fn iir_vec_zip_4(input: &Vec<f64>, output: &mut Vec<f64>, bq: &mut Biquad) {
     bq.y2 = y2;
 }
 
+fn iir_vec_zip_5(input: &Vec<f64>, output: &mut Vec<f64>, bq: &mut Biquad, buffer_length: usize) {
+    let mut x1 = bq.x1;
+    let mut x2 = bq.x2;
+    let mut y1 = bq.y1;
+    let mut y2 = bq.y2;
+
+    let xs = &input[..buffer_length];
+    let ys = &mut output[..buffer_length];
+
+    for (&x, y) in xs.iter().zip(ys.iter_mut()) {
+        *y = (bq.b0 * x) + (bq.b1 * x1) + (bq.b2 * x2) - (bq.a1 * y1) - (bq.a2 * y2);
+
+        x2 = x1;
+        x1 = x;
+
+        y2 = y1;
+        y1 = *y;
+    }
+
+    bq.x1 = x1;
+    bq.x2 = x2;
+    bq.y1 = y1;
+    bq.y2 = y2;
+}
+
 fn iir_array(input: &[f64; 4096], output: &mut [f64; 4096], bq: &mut Biquad) {
     for i in 0..input.len() {
         output[i] = (bq.b0 * input[i]) + (bq.b1 * bq.x1) + (bq.b2 * bq.x2) - (bq.a1 * bq.y1) -
@@ -378,6 +403,15 @@ fn main() {
         }
         let elapsed = precise_time_ns() - start;
         println!("iir_vec_zip_4:\t\t\t{} ns per loop", elapsed / bench_loops);
+    }
+
+    {
+        let start = precise_time_ns();
+        for _ in 0..bench_loops {
+            iir_vec_zip_5(&input, &mut output, &mut bq, buffer_length);
+        }
+        let elapsed = precise_time_ns() - start;
+        println!("iir_vec_zip_5:\t\t\t{} ns per loop", elapsed / bench_loops);
     }
 
     {

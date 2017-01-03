@@ -307,8 +307,9 @@ fn iir_slice_zip_2(input: &[f64], output: &mut [f64], bq: &mut Biquad) {
 fn iir_slice_unsafe(input: &[f64], output: &mut [f64], bq: &mut Biquad) {
     unsafe {
         for i in 0..input.len() {
-            output[i] = (bq.b0 * *input.get_unchecked(i)) + (bq.b1 * bq.x1) + (bq.b2 * bq.x2) -
-                        (bq.a1 * bq.y1) - (bq.a2 * bq.y2);
+            *output.get_unchecked_mut(i) =
+                (bq.b0 * *input.get_unchecked(i)) + (bq.b1 * bq.x1) + (bq.b2 * bq.x2) -
+                (bq.a1 * bq.y1) - (bq.a2 * bq.y2);
 
             bq.x2 = bq.x1;
             bq.x1 = *input.get_unchecked(i);
@@ -317,6 +318,33 @@ fn iir_slice_unsafe(input: &[f64], output: &mut [f64], bq: &mut Biquad) {
             bq.y1 = *output.get_unchecked(i);
         }
     }
+}
+
+fn iir_slice_unsafe_2(input: &[f64], output: &mut [f64], bq: &mut Biquad) {
+    let len = input.len();
+
+    let mut x1 = bq.x1;
+    let mut x2 = bq.x2;
+    let mut y1 = bq.y1;
+    let mut y2 = bq.y2;
+
+    unsafe {
+        for i in 0..len {
+            *output.get_unchecked_mut(i) =
+                (bq.b0 * *input.get_unchecked(i)) + (bq.b1 * x1) + (bq.b2 * x2) - (bq.a1 * y1) -
+                (bq.a2 * y2);
+
+            x2 = x1;
+            x1 = *input.get_unchecked(i);
+
+            y2 = y1;
+            y1 = *output.get_unchecked(i);
+        }
+    }
+    bq.x1 = x1;
+    bq.x2 = x2;
+    bq.y1 = y1;
+    bq.y2 = y2;
 }
 
 fn main() {
@@ -446,6 +474,16 @@ fn main() {
         }
         let elapsed = precise_time_ns() - start;
         println!("iir_slice_unsafe (vec):\t\t{} ns per loop",
+                 elapsed / bench_loops);
+    }
+
+    {
+        let start = precise_time_ns();
+        for _ in 0..bench_loops {
+            iir_slice_unsafe_2(&input, &mut output, &mut bq);
+        }
+        let elapsed = precise_time_ns() - start;
+        println!("iir_slice_unsafe_2 (vec):\t{} ns per loop",
                  elapsed / bench_loops);
     }
 

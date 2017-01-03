@@ -80,7 +80,6 @@ fn white_noise_array() -> [f64; 4096] {
     return arr;
 }
 
-
 fn iir_vec(input: &Vec<f64>, output: &mut Vec<f64>, bq: &mut Biquad) {
     for i in 0..input.len() {
         output[i] = (bq.b0 * input[i]) + (bq.b1 * bq.x1) + (bq.b2 * bq.x2) - (bq.a1 * bq.y1) -
@@ -283,8 +282,6 @@ fn iir_slice_zip(input: &[f64], output: &mut [f64], bq: &mut Biquad) {
     bq.y2 = y2;
 }
 
-
-
 fn iir_slice_zip_2(input: &[f64], output: &mut [f64], bq: &mut Biquad) {
     let mut x1 = bq.x1;
     let mut x2 = bq.x2;
@@ -306,7 +303,6 @@ fn iir_slice_zip_2(input: &[f64], output: &mut [f64], bq: &mut Biquad) {
     bq.y1 = y1;
     bq.y2 = y2;
 }
-
 
 fn iir_slice_unsafe(input: &[f64], output: &mut [f64], bq: &mut Biquad) {
     unsafe {
@@ -430,6 +426,16 @@ fn main() {
         }
         let elapsed = precise_time_ns() - start;
         println!("iir_slice_zip (vec):\t\t{} ns per loop",
+                 elapsed / bench_loops);
+    }
+
+    {
+        let start = precise_time_ns();
+        for _ in 0..bench_loops {
+            iir_slice_zip_2(&input, &mut output, &mut bq);
+        }
+        let elapsed = precise_time_ns() - start;
+        println!("iir_slice_zip_2 (vec):\t\t{} ns per loop",
                  elapsed / bench_loops);
     }
 

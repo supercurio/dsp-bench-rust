@@ -72,7 +72,7 @@ fn white_noise(length: usize) -> Vec<f64> {
 fn white_noise_array() -> [f64; 4096] {
     let mut rng = rand::thread_rng();
 
-    let mut arr = [0.0; 4096];
+    let mut arr: [f64; 4096] = [0.0; 4096];
     for i in 0..arr.len() {
         arr[i] = rng.gen::<f64>()
     }
@@ -489,7 +489,7 @@ fn main() {
 
     {
         let input_array = white_noise_array();
-        let mut output_array = [0.0; 4096];
+        let mut output_array: [f64; 4096] = [0.0; 4096];
 
         let start = precise_time_ns();
         for _ in 0..bench_loops {
@@ -501,7 +501,7 @@ fn main() {
 
     {
         let input_array = white_noise_array();
-        let mut output_array = [0.0; 4096];
+        let mut output_array: [f64; 4096] = [0.0; 4096];
 
         let start = precise_time_ns();
         for _ in 0..bench_loops {
@@ -516,7 +516,7 @@ fn main() {
 
     {
         let input_array = white_noise_array();
-        let mut output_array = [0.0; 4096];
+        let mut output_array: [f64; 4096] = [0.0; 4096];
 
         let start = precise_time_ns();
         for _ in 0..bench_loops {
@@ -529,7 +529,7 @@ fn main() {
 
     {
         let input_array = white_noise_array();
-        let mut output_array = [0.0; 4096];
+        let mut output_array: [f64; 4096] = [0.0; 4096];
 
         let start = precise_time_ns();
         for _ in 0..bench_loops {
@@ -542,7 +542,7 @@ fn main() {
 
     {
         let input_array = white_noise_array();
-        let mut output_array = [0.0; 4096];
+        let mut output_array: [f64; 4096] = [0.0; 4096];
 
         let start = precise_time_ns();
         for _ in 0..bench_loops {
@@ -557,7 +557,7 @@ fn main() {
 
     {
         let input_array = white_noise_array();
-        let mut output_array = [0.0; 4096];
+        let mut output_array: [f64; 4096] = [0.0; 4096];
 
         let start = precise_time_ns();
         for _ in 0..bench_loops {
@@ -570,7 +570,7 @@ fn main() {
 
     {
         let input_array = white_noise_array();
-        let mut output_array = [0.0; 4096];
+        let mut output_array: [f64; 4096] = [0.0; 4096];
 
         let start = precise_time_ns();
         for _ in 0..bench_loops {

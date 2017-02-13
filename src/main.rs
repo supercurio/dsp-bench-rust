@@ -347,6 +347,35 @@ fn iir_slice_unsafe_2(input: &[f64], output: &mut [f64], bq: &mut Biquad) {
     bq.y2 = y2;
 }
 
+fn iir_copy_vec_to_array(input: &Vec<f64>, output: &mut Vec<f64>, bq: &mut Biquad) {
+
+    let mut input_array = [0.0; 4096];
+    let mut output_array = [0.0; 4096];
+
+    assert_eq!(input.len(), input_array.len());
+
+    for i in 0..4096 {
+        input_array[i] = input[i];
+    }
+
+    for i in 0..4096 {
+        output_array[i] = (bq.b0 * input_array[i]) + (bq.b1 * bq.x1) + (bq.b2 * bq.x2) -
+                          (bq.a1 * bq.y1) - (bq.a2 * bq.y2);
+
+        bq.x2 = bq.x1;
+        bq.x1 = input_array[i];
+
+        bq.y2 = bq.y1;
+        bq.y1 = output_array[i];
+    }
+
+    assert_eq!(output.len(), output_array.len());
+
+    for i in 0..4096 {
+        output[i] = output_array[i];
+    }
+}
+
 fn main() {
     println!("DSP bench rust");
 
@@ -373,6 +402,16 @@ fn main() {
         }
         let elapsed = precise_time_ns() - start;
         println!("iir_vec:\t\t\t{} ns per loop", elapsed / bench_loops);
+    }
+
+    {
+        let start = precise_time_ns();
+        for _ in 0..bench_loops {
+            iir_copy_vec_to_array(&input, &mut output, &mut bq);
+        }
+        let elapsed = precise_time_ns() - start;
+        println!("iir_copy_vec_to_array:\t\t{} ns per loop",
+                 elapsed / bench_loops);
     }
 
     {
